@@ -1,0 +1,24 @@
+# Core HTTP & parsing
+requests>=2.31.0
+beautifulsoup4>=4.12.3
+lxml>=5.2.2
+urllib3>=2.2.0
+
+# Data processing & storage
+pandas>=2.2.2
+openpyxl>=3.1.5
+
+# Visualization
+matplotlib>=3.9.0
+
+# UI
+streamlit>=1.36.0
+
+# API backend (serves the React frontend)
+fastapi>=0.112.0
+uvicorn[standard]>=0.30.3
+pydantic>=2.8.0
+redis>=5.0.0
+
+# Utilities
+python-dateutil>=2.9.0.post0

@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  scraper:
+    build: .
+    container_name: ecommerce-scraper
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      # CORS origins for the frontend (dev server or same-origin in prod)
+      - FRONTEND_ORIGINS=${FRONTEND_ORIGINS:-http://localhost:5173,http://localhost:8000}
+      # Number of background scrape workers
+      - SCRAPER_WORKERS=${SCRAPER_WORKERS:-2}
+      # Number of uvicorn workers (keep 1 with the in-memory store; set
+      # REDIS_URL to share job state and scale workers horizontally)
+      - UVICORN_WORKERS=${UVICORN_WORKERS:-1}
+    volumes:
+      # Persist scraped output & logs between container restarts
+      - ./output:/app/output
+      - ./logs:/app/logs
+    restart: unless-stopped
+    profiles: ["production"]
+
+  # Local development: React dev server + FastAPI backend side by side
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: scraper-frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      - VITE_PROXY_TARGET=http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    profiles: ["frontend-dev"]
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.dev
+    container_name: scraper-backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      - FRONTEND_ORIGINS=${FRONTEND_ORIGINS:-http://localhost:5173}
+      - SCRAPER_WORKERS=${SCRAPER_WORKERS:-2}
+    command: uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./:/app
+      - ./output:/app/output
+      - ./logs:/app/logs
+    profiles: ["frontend-dev"]
