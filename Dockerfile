@@ -33,7 +33,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application source + the pre-built frontend assets.
 COPY scraper/ ./scraper/
-COPY api.py ./
+COPY api.py jobs_store.py ./
 COPY --from=frontend-builder /app/frontend/dist/ ./frontend/dist/
 
 # Ensure runtime output/log directories exist.
