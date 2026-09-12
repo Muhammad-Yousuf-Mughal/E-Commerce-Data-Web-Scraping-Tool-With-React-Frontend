@@ -33,7 +33,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application source + the pre-built frontend assets.
 COPY scraper/ ./scraper/
-COPY api.py jobs_store.py ./
+COPY *.py ./
 COPY --from=frontend-builder /app/frontend/dist/ ./frontend/dist/
 
 # Ensure runtime output/log directories exist.
@@ -41,9 +41,9 @@ RUN mkdir -p /app/output /app/logs
 
 EXPOSE 8000
 
-    HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-        CMD python -c "import urllib.request,sys; \
-        urllib.request.urlopen('http://localhost:${PORT:-8000}/api/health', timeout=5); \
-        sys.exit(0)" || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD python -c "import urllib.request,sys; \
+    urllib.request.urlopen('http://localhost:${PORT:-8000}/api/health', timeout=5); \
+    sys.exit(0)" || exit 1
 
 CMD ["sh", "-c", "exec uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000} --workers ${UVICORN_WORKERS:-1}"]
